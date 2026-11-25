@@ -2,9 +2,14 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinTable,
+  ManyToMany,
+  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Album } from '../../albumes/entities/album.entity.js';
+import { Etiqueta } from './etiqueta.entity.js';
 
 @Entity('fotos')
 export class Foto {
@@ -25,6 +30,22 @@ export class Foto {
 
   @Column({ type: 'text', nullable: true })
   fotografo: string | null;
+
+  // N:1  Muchas fotos pertenecen a un álbum
+  @ManyToOne(() => Album, (album) => album.fotos, {
+    onDelete: 'SET NULL',
+    nullable: true,
+  })
+  album: Album | null;
+
+  // N:M  Una foto tiene muchas etiquetas y viceversa
+  @ManyToMany(() => Etiqueta, (etiqueta) => etiqueta.fotos)
+  @JoinTable({
+    name: 'fotos_etiquetas',
+    joinColumn: { name: 'foto_id' },
+    inverseJoinColumn: { name: 'etiqueta_id' },
+  })
+  etiquetas: Etiqueta[];
 
   @CreateDateColumn()
   creadoEn: Date;
