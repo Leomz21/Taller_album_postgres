@@ -1,56 +1,42 @@
 import {
   Body,
   Controller,
-  DefaultValuePipe,
   Delete,
   Get,
   HttpCode,
+  HttpStatus,
   Param,
-  ParseFloatPipe,
   ParseIntPipe,
   Patch,
   Post,
   Query,
 } from '@nestjs/common';
 import { FotosService } from './fotos.service.js';
-import type { Foto } from './entities/foto.entity.js';
+import { CreateFotoDto } from './dto/create-foto.dto.js';
+import { UpdateFotoDto } from './dto/update-foto.dto.js';
+import { QueryFotosDto } from './dto/query-fotos.dto.js';
 
 @Controller('fotos') // ruta base: /fotos
 export class FotosController {
   constructor(private readonly fotosService: FotosService) {}
 
-  // /api/fotos?min=3&max=5&q=foto&page=1&limit=5
   @Get()
-  findAll(
-    @Query('min', new DefaultValuePipe(0), ParseFloatPipe) min: number,
-    @Query('max', new DefaultValuePipe(5), ParseFloatPipe) max: number,
-    @Query('q') q: string | undefined,
-    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
-    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
-  ) {
-    return this.fotosService.findAll({ min, max, q, page, limit });
+  findAll(@Query() filtro: QueryFotosDto) {
+    return this.fotosService.findAll(filtro);
   }
 
-  @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.fotosService.findOne(id);
-  }
-
-  @Post()
-  create(@Body() datos: Omit<Foto, 'id'>) {
-    return this.fotosService.create(datos);
+  @Post() // 201 Created por defecto
+  create(@Body() dto: CreateFotoDto) {
+    return this.fotosService.create(dto);
   }
 
   @Patch(':id')
-  update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() datos: Partial<Omit<Foto, 'id'>>,
-  ) {
-    return this.fotosService.update(id, datos);
+  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateFotoDto) {
+    return this.fotosService.update(id, dto);
   }
 
   @Delete(':id')
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT) // 204: éxito sin cuerpo
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.fotosService.remove(id);
   }
